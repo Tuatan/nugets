@@ -1,0 +1,698 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Tableau REST APIs",
+    "version": "1.0",
+    "contact": {
+      "name": "Serge Black"
+    },
+    "description": "Tableau REST APIs"
+  },
+  "servers": [
+    {
+      "url": "https://us-west-2a.online.tableau.com/"
+    }
+  ],
+  "paths": {
+    "/api/2.3/auth/signin": {
+      "post": {
+        "operationId": "Signin",
+        "summary": "Sign in",
+        "description": "Signs you in as a user on the specified site on Tableau Server. This call returns a credentials token that you use in subsequent calls to the server. Typically, a credentials token is valid for 240 minutes. You can change this timeout by using the tsm configuration set command and setting the wgserver.session.idle_limit option.",
+        "tags": [
+          "Authentication"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignInResponse"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/2.3/auth/signout": {
+      "post": {
+        "operationId": "Signout",
+        "summary": "Sing Out",
+        "description": "Signs you out of the current session. This call invalidates the authentication token that is created by a call to Sign In.",
+        "tags": [
+          "Authentication"
+        ],
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{version}/sites/{site_luid}/fileUploads": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "version",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "site_luid",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "post": {
+        "operationId": "Create",
+        "summary": "Start File Upload",
+        "description": "Initiates the upload process for a file. After the upload has been initiated, you call Append to File Upload to send individual blocks of the file to the server. When the complete file has been sent to the server, you call Publish Data Source, Publish Flow, or Publish Workbook to commit the upload. <br> Initiate File Upload returns an upload session ID that you pass to Append to File Upload or one of the publishing methods in order to identify the upload session. <br> The file size that is returned in the response is initialized to zero (0) megabytes, because no data has yet been loaded. Subsequent calls to Append to File Upload or the publishing APIs update this value.",
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "tags": [
+          "File Upload"
+        ],
+        "responses": {
+          "202": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFileUpload"
+                },
+                "example": {
+                  "fileUpload": {
+                    "uploadSessionId": "23432:be134bda65bf4d8890b95230352b7b03-6:1",
+                    "fileSize": 0
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "applcation/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{version}/sites/{site_luid}/fileUploads/{upload_luid}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "version",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "site_luid",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "upload_luid",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "put": {
+        "operationId": "Append",
+        "summary": "Append chunk",
+        "description": "Uploads a block of data and appends it to the data that is already uploaded. This method is called after an upload has been initiated using Initiate File Upload. <br> You call Append to File Upload as many times as needed in order to upload the complete contents of a file. When the final block of data has been uploaded, you call Publish Data Source, Publish Flow, or Publish Workbook to commit the file.",
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "tags": [
+          "File Upload"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/mixed": {
+              "encoding": {
+                "tableau_file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableau_file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "tableau_file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateFileUpload"
+                },
+                "example": {
+                  "fileUpload": {
+                    "uploadSessionId": "23432:be134bda65bf4d8890b95230352b7b03-6:1",
+                    "fileSize": 6240
+                  }
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "applcation/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{version}/sites/{site_luid}/jobs/{job_id}": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "version",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "site_luid",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "job_id",
+          "in": "path",
+          "required": true
+        }
+      ],
+      "get": {
+        "operationId": "QueryJob",
+        "summary": "Query Job",
+        "description": "Returns status information about an asynchronous process that is tracked using a job.",
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "tags": [
+          "Jobs"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{version}/sites/{site_luid}/datasources": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "version",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "site_luid",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "datasourceType",
+          "in": "query",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "asJob",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "append",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "overwrite",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "uploadSessionId",
+          "in": "query"
+        }
+      ],
+      "post": {
+        "operationId": "PublishDatasource",
+        "summary": "Publish Data Source",
+        "description": "Publishes a data source on the specified site, or appends data to an existing data source. To make other changes to a published data source, call Update Data Source or Update Data Source Connection. <br>This method is used in two ways. You can call it to publish a data source in a single request. To do that, you include the content of the workbook file in the body of the request. The maximum size of a file that can be published in a single request is 64 MB. If you want to avoid having the publishing process time out, you can use the asJob parameter to make workbook publication asynchronous.<br> Alternatively, you can publish a data source in multiple parts. To do that, you initiate a file upload by calling Initiate File Upload, send portions of the file to the server using Append to File Upload, and then commit the upload by calling Publish Data Source. In this case, Publish Data Source doesn't contain the file to publish.",
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "tags": [
+          "Publishing"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/mixed": {
+              "encoding": {
+                "tableau_file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableau_datasource": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "request_payload": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "request_payload"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Datasource"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "applcation/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/{version}/sites/{site_luid}/workbooks": {
+      "parameters": [
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "version",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "site_luid",
+          "in": "path",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "workbookType",
+          "in": "query",
+          "required": true
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "asJob",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "append",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "boolean"
+          },
+          "name": "overwrite",
+          "in": "query"
+        },
+        {
+          "schema": {
+            "type": "string"
+          },
+          "name": "uploadSessionId",
+          "in": "query"
+        }
+      ],
+      "post": {
+        "operationId": "PublishWorkbook",
+        "summary": "Publish Workbook",
+        "description": "Publishes a workbook on the specified site. To make changes to a published workbook, call Update Workbook or Update Workbook Connection.<br>This method is used in two ways. You can call it to publish a workbook in a single request. To do that, you include the content of the workbook file in the body of the request. The maximum size of a file that can be published in a single request is 64 MB. If you want to avoid having the publishing process time out, you can use the asJob parameter to make workbook publication asynchronous. <br> Alternatively, you can publish a workbook in multiple parts. To do that, you initiate a file upload by calling Initiate File Upload, send portions of the file to the server using Append to File Upload, and then commit the upload by calling Publish Workbook. In this case, Publish Workbook doesn't contain the file to publish.",
+        "security": [
+          {
+            "ExternalAuthKey": []
+          }
+        ],
+        "tags": [
+          "Publishing"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/mixed": {
+              "encoding": {
+                "tableau_file": {
+                  "contentType": "application/octet-stream"
+                }
+              },
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "tableau_workbook": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "request_payload": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "request_payload"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Workbook"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Error",
+            "content": {
+              "applcation/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "integer"
+          },
+          "finishCode": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "Workbook": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "Datasource": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateFileUpload": {
+        "type": "object",
+        "properties": {
+          "fileUpload": {
+            "type": "object",
+            "properties": {
+              "uploadSessionId": {
+                "type": "string"
+              },
+              "fileSize": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "uploadSessionId",
+              "fileSize"
+            ]
+          }
+        }
+      },
+      "Site": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "contentUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "Credentials": {
+        "type": "object",
+        "properties": {
+          "personalAccessTokenName": {
+            "type": "string"
+          },
+          "personalAccessTokenSecret": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "site": {
+            "$ref": "#/components/schemas/Site"
+          }
+        }
+      },
+      "SignInRequest": {
+        "type": "object",
+        "properties": {
+          "credentials": {
+            "$ref": "#/components/schemas/Credentials"
+          }
+        },
+        "required": [
+          "credentials"
+        ]
+      },
+      "SignInResponse": {
+        "type": "object",
+        "properties": {
+          "credentials": {
+            "$ref": "#/components/schemas/Credentials"
+          }
+        },
+        "required": [
+          "credentials"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "summary": {
+                "type": "string"
+              },
+              "detail": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "ExternalAuthKey": {
+        "name": "x-tableau-auth",
+        "type": "apiKey",
+        "in": "header"
+      }
+    }
+  }
+}
