@@ -225,7 +225,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Datasource'
+                type: object
+                properties:
+                  datasource:
+                    $ref: '#/components/schemas/Datasource'
         '202':
           description: Accepted
           content:
