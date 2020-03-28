@@ -32,7 +32,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /auth/signout:
     post:
       operationId: Signout
@@ -50,7 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /sites/{site_luid}/fileUploads:
     parameters:
       - schema:
@@ -82,7 +82,7 @@ paths:
           content:
             applcation/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /sites/{site_luid}/fileUploads/{upload_luid}:
     parameters:
       - schema:
@@ -133,7 +133,7 @@ paths:
           content:
             applcation/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /sites/{site_luid}/jobs/{job_id}:
     parameters:
       - schema:
@@ -169,7 +169,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /sites/{site_luid}/datasources:
     parameters:
       - schema:
@@ -240,7 +240,7 @@ paths:
           content:
             applcation/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
   /sites/{site_luid}/workbooks:
     parameters:
       - schema:
@@ -311,7 +311,7 @@ paths:
           content:
             applcation/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     Job:
@@ -327,6 +327,8 @@ components:
           type: string
         type:
           type: string
+        statusNotes:
+          type: string
         createdAt:
           type: string
       required:
@@ -336,10 +338,28 @@ components:
       properties:
         id:
           type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        contentUrl:
+          type: string
     Datasource:
       type: object
       properties:
         id:
+          type: string
+        name:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        type:
+          type: string
+        contentUrl:
           type: string
     CreateFileUpload:
       type: object
@@ -404,6 +424,13 @@ components:
           $ref: '#/components/schemas/Credentials'
       required:
         - credentials
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      required:
+        - error
     Error:
       type: object
       properties:
