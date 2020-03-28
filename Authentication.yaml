@@ -160,7 +160,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Job'
+                type: object
+                properties:
+                  job:
+                    $ref: '#/components/schemas/Job'
         default:
           description: Error
           content:
@@ -296,19 +299,13 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  workbook:
-                    $ref: '#/components/schemas/Workbook'
+                $ref: '#/components/schemas/PublishWorkbookResponse'
         '202':
           description: Accepted
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  job:
-                    $ref: '#/components/schemas/Job'
+                $ref: '#/components/schemas/PublishWorkbookResponse'
         default:
           description: Error
           content:
@@ -326,6 +323,12 @@ components:
           type: integer
         finishCode:
           type: integer
+        mode:
+          type: string
+        type:
+          type: string
+        createdAt:
+          type: string
       required:
         - id
     Workbook:
@@ -378,6 +381,13 @@ components:
       properties:
         datasource:
           $ref: '#/components/schemas/Datasource'
+        job:
+          $ref: '#/components/schemas/Job'
+    PublishWorkbookResponse:
+      type: object
+      properties:
+        workbook:
+          $ref: '#/components/schemas/Workbook'
         job:
           $ref: '#/components/schemas/Job'
     SignInRequest:
